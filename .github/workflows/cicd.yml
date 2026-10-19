@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: write
+  packages: write
   pages: write
   id-token: write
 
@@ -28,7 +29,7 @@ jobs:
       - name: 📥 Check out repository code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js runtime (No Docker)
+      - name: ⚙️ Setup Node.js runtime
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -55,11 +56,65 @@ jobs:
           retention-days: 7
 
   # ==========================================
-  # STAGE 2: CONTINUOUS DEPLOYMENT (CD)
+  # STAGE 2: DOCKER CONTAINER BUILD & TEST
+  # ==========================================
+  docker-build-test:
+    name: 🐳 Docker - Container Build & Health Probe
+    needs: [continuous-integration]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Check out repository code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker Image
+        run: |
+          docker build -t novashop-app:local .
+
+      - name: 🚀 Run Containerized Application
+        run: |
+          docker run -d --name novashop-container -p 3000:3000 novashop-app:local
+          sleep 5
+
+      - name: 🩺 Test Container Health Probe
+        run: |
+          echo "Pinging container health check endpoint..."
+          curl --fail --retry 3 --retry-delay 2 http://localhost:3000/health || exit 1
+          echo "Container health check passed successfully!"
+
+      - name: 🛑 Cleanup Test Container
+        run: |
+          docker stop novashop-container && docker rm novashop-container
+
+      - name: 🔐 Log in to GitHub Container Registry (Zero sign-in required)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Push Docker Image to GHCR
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository }}
+          # Convert to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          docker tag novashop-app:local $IMAGE_ID:latest
+          docker tag novashop-app:local $IMAGE_ID:${{ github.sha }}
+          docker push $IMAGE_ID:latest
+          docker push $IMAGE_ID:${{ github.sha }}
+          echo "Docker image published to $IMAGE_ID:latest"
+
+  # ==========================================
+  # STAGE 3: CONTINUOUS DEPLOYMENT (CD)
   # ==========================================
   continuous-deployment:
     name: 🚀 CD - Automated Deployment
-    needs: [continuous-integration]
+    needs: [docker-build-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
@@ -98,6 +153,7 @@ jobs:
           echo "=================================================="
           echo "✅ Continuous Deployment Completed Successfully!"
           echo "Target Environment: Production"
+          echo "Docker Image: ghcr.io/${{ github.repository }}:latest"
           echo "Triggered by Commit: ${{ github.sha }}"
           echo "Branch: ${{ github.ref_name }}"
           echo "Actor: ${{ github.actor }}"
