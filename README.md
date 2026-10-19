@@ -1,29 +1,23 @@
-# 🚀 Cloud-Native CI/CD Pipeline (GitHub & GitHub Actions)
+# 🛒 NovaShop — Cloud-Native E-Commerce Single Page Application
 
-[![Cloud-Native CI/CD Pipeline](https://github.com/paramdesai24/devops-cicd-basic/actions/workflows/cicd.yml/badge.svg)](https://github.com/paramdesai24/devops-cicd-basic/actions/workflows/cicd.yml)
+[![CI/CD Pipeline](https://github.com/paramdesai24/devops-cicd-basic/actions/workflows/cicd.yml/badge.svg)](https://github.com/paramdesai24/devops-cicd-basic/actions/workflows/cicd.yml)
 
-A lightweight, simple, and containerless Continuous Integration and Continuous Deployment (CI/CD) pipeline for a cloud-native Node.js application built using **GitHub** and **GitHub Actions** (without Docker).
+A high-performance, containerless **E-Commerce Single Page Application (SPA)** with an automated Continuous Integration and Continuous Deployment (CI/CD) pipeline built using **GitHub Actions** (without Docker).
 
 ---
 
-## 📋 Features
+## ✨ Features
 
-- **No Docker Required**: Runs directly on bare-metal GitHub Actions runners (`ubuntu-latest`) with Node.js runtime for ultra-fast execution (~30 seconds).
-- **Continuous Integration (CI)**:
-  - Automated repository checkout.
-  - Dependency caching and verification.
-  - Native unit and integration testing via `node:test` and `node:assert` (zero heavy external test runners).
-  - Code syntax validation.
-  - Build artifact packaging and archiving.
-- **Continuous Deployment (CD)**:
-  - Triggered automatically on push to the `main` branch upon successful CI.
-  - Smoke tests and pre-deployment health verification.
-  - Production deployment tracking and environment reporting.
-  - Deploys application dashboard to GitHub Pages.
-- **Cloud-Native Design (12-Factor App)**:
-  - **Environment parity**: Port and environment configured via `process.env`.
-  - **Health Probes**: Dedicated `/health` (liveness probe) and `/ready` (readiness probe) endpoints.
-  - **Graceful Lifecycle**: Handles `SIGTERM` and `SIGINT` signals for zero-downtime termination.
+- **Rich E-Commerce Experience**:
+  - **Product Catalog**: Live browsing with category filtering (Audio, Wearables, Accessories) and instant real-time search.
+  - **Interactive Cart**: Slide-over drawer with item increment/decrement, subtotal, tax calculation, and removal.
+  - **Coupon / Promo Code Engine**: Instant discount calculation (e.g., promo code `DEVOPS10` for 10% off).
+  - **Express Checkout**: Modal with customer details, payment method selection, and order confirmation receipt generation.
+  - **Toast Notifications**: Smooth visual feedback for user actions.
+- **Automated CI/CD Pipeline (GitHub Actions)**:
+  - **Continuous Integration (CI)**: Automated code checkout, Node.js environment setup, dependency installation, syntax checks, and unit/integration testing on `ubuntu-latest`.
+  - **Continuous Deployment (CD)**: Automatically triggers upon commit to `main`, executes smoke tests, and deploys the application dashboard.
+- **Zero Docker Overhead**: Runs directly on bare-metal GitHub Actions runners with lightning-fast execution times (~30 seconds).
 
 ---
 
@@ -31,62 +25,40 @@ A lightweight, simple, and containerless Continuous Integration and Continuous D
 
 ```mermaid
 flowchart LR
-    A[👨‍💻 Git Push to main] --> B[GitHub Repository]
+    A[👨‍💻 Push to main] --> B[GitHub Repository]
     B --> C[CI Stage: Build & Test]
     subgraph CI [Continuous Integration]
-        C --> C1[Checkout Code]
-        C1 --> C2[Setup Node.js 22]
+        C --> C1[Checkout Repository]
+        C1 --> C2[Setup Node.js 22 Runtime]
         C2 --> C3[Install Dependencies]
-        C3 --> C4[Run Automated Tests]
+        C3 --> C4[Run 6 Automated API Tests]
         C4 --> C5[Archive Build Artifact]
     end
     C5 --> D[CD Stage: Deploy]
     subgraph CD [Continuous Deployment]
-        D --> D1[Pre-flight Smoke Check]
-        D1 --> D2[Production Deployment]
-        D2 --> D3[Deploy Dashboard]
+        D --> D1[Pre-flight Smoke Test]
+        D1 --> D2[Deploy SPA to GitHub Pages]
+        D2 --> D3[Audit & Verification Log]
     end
-    D3 --> E[🎉 Production Ready]
+    D3 --> E[🎉 Production Live]
 ```
 
 ---
 
-## 📁 Project Structure
+## 🔌 API Endpoints
 
-```
-├── .github/
-│   └── workflows/
-│       └── cicd.yml         # GitHub Actions CI/CD Pipeline specification
-├── public/
-│   └── index.html           # Cloud-native status dashboard & live endpoint tester
-├── src/
-│   ├── app.js               # Express application with cloud-native probes
-│   └── server.js            # Server entrypoint with graceful shutdown
-├── test/
-│   └── app.test.js          # Automated unit & integration tests
-├── .gitignore               # Ignored files (node_modules, logs)
-├── package.json             # Application metadata and scripts
-└── README.md                # Documentation and workflow guide
-```
-
----
-
-## 🔌 API Endpoints & Health Probes
-
-| Method | Endpoint | Description | Cloud-Native Purpose |
-|---|---|---|---|
-| `GET` | `/` | Web Status Dashboard | User & operator UI |
-| `GET` | `/health` | Application Liveness Probe | Kubernetes / Cloud Health Monitoring |
-| `GET` | `/ready` | Application Readiness Probe | Ingress traffic routing readiness |
-| `GET` | `/api/info` | Application Metadata & Uptime | Telemetry and environment diagnostics |
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Serves the E-Commerce Single Page Application |
+| `GET` | `/api/products` | Retrieve all products (supports `?category=` and `?search=`) |
+| `GET` | `/api/products/:id` | Fetch details for a specific product |
+| `POST` | `/api/orders` | Place a new order with validation |
+| `GET` | `/health` | Cloud-Native liveness probe for monitoring |
+| `GET` | `/api/info` | Application metadata and telemetry |
 
 ---
 
 ## 💻 Local Development
-
-### Prerequisites
-- Node.js (version 18, 20, or 22)
-- Git
 
 ### 1. Clone the repository
 ```bash
@@ -108,13 +80,4 @@ npm test
 ```bash
 npm start
 ```
-The server will start on `http://localhost:3000`.
-
----
-
-## ⚙️ Enabling GitHub Pages (Optional for Live CD Web Dashboard)
-
-To enable live hosting of the web dashboard via the CD job:
-1. In your GitHub repository, navigate to **Settings** > **Pages**.
-2. Under **Build and deployment** > **Source**, select **GitHub Actions**.
-3. Any push to `main` will automatically build and publish the live dashboard.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
