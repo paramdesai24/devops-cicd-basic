@@ -1,0 +1,21 @@
+{
+  "name": "devops-cicd-basic",
+  "version": "1.0.0",
+  "description": "Cloud-native basic application with automated CI/CD pipeline using GitHub Actions",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "devops",
+    "ci-cd",
+    "github-actions",
+    "cloud-native"
+  ],
+  "author": "Param Desai",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

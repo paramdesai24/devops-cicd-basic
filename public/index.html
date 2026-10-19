@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud-Native DevOps CI/CD App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 24, 38, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --accent: #818cf8;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.12) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .container {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+
+    p.subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    }
+
+    .card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px -4px rgba(56, 189, 248, 0.15);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 0.75rem;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .card p {
+      font-size: 0.925rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .pipeline-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      backdrop-filter: blur(16px);
+    }
+
+    .pipeline-card h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .step-box {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-box.active {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .step-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.35rem;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .interactive-tester {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2rem;
+      backdrop-filter: blur(16px);
+    }
+
+    .tester-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    button {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .code-display {
+      background: #040711;
+      border: 1px solid var(--card-border);
+      border-radius: 0.6rem;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      min-height: 90px;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-container">
+        <span class="status-dot"></span>
+        <span>CI/CD Automated Deployment Active</span>
+      </div>
+      <h1>Cloud-Native CI/CD Pipeline</h1>
+      <p class="subtitle">A lightweight, containerless continuous integration and continuous deployment pipeline powered by GitHub Actions.</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Continuous Integration</h3>
+        <p>Automated checkout, Node.js environment provisioning, dependency caching, and native unit testing with <code>node:test</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h3>Continuous Deployment</h3>
+        <p>Zero-Docker, lightweight deployment pipeline triggering automatically on commits to the <code>main</code> branch with validation checks.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>Cloud-Native Ready</h3>
+        <p>Follows 12-factor principles: decoupled config, liveness/readiness health probes, and graceful SIGTERM/SIGINT process handling.</p>
+      </div>
+    </div>
+
+    <div class="pipeline-card">
+      <h2>🔄 Pipeline Architecture</h2>
+      <div class="pipeline-flow">
+        <div class="step-box">
+          <span class="step-tag">1. Commit</span>
+          <div class="step-title">Git Push</div>
+          <div class="step-desc">Developer pushes to GitHub</div>
+        </div>
+        <div class="step-box active">
+          <span class="step-tag">2. CI Stage</span>
+          <div class="step-title">Build & Test</div>
+          <div class="step-desc">Automated testing & linting</div>
+        </div>
+        <div class="step-box active">
+          <span class="step-tag">3. CD Stage</span>
+          <div class="step-title">Deploy App</div>
+          <div class="step-desc">Automated deployment artifact</div>
+        </div>
+        <div class="step-box">
+          <span class="step-tag">4. Monitor</span>
+          <div class="step-title">Health Probes</div>
+          <div class="step-desc">Live /health & /ready metrics</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="interactive-tester">
+      <div class="tester-header">
+        <div>
+          <h2 style="font-size: 1.3rem; margin-bottom: 0.25rem;">Live Endpoint Tester</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Query the cloud-native application endpoints in real time</p>
+        </div>
+        <div class="btn-group">
+          <button id="btnHealth" onclick="checkEndpoint('/health')">Probe /health</button>
+          <button id="btnReady" onclick="checkEndpoint('/ready')">Probe /ready</button>
+          <button id="btnInfo" onclick="checkEndpoint('/api/info')">Query /api/info</button>
+        </div>
+      </div>
+      <pre class="code-display" id="outputJson">// Click an endpoint button above to test live responses...</pre>
+    </div>
+
+    <footer>
+      Repository: <a href="https://github.com/paramdesai24/devops-cicd-basic" target="_blank">paramdesai24/devops-cicd-basic</a>
+      <br><span style="opacity: 0.7; font-size: 0.8rem;">DevOps Practical 10 • Cloud-Native Continuous Integration & Deployment</span>
+    </footer>
+  </div>
+
+  <script>
+    async function checkEndpoint(path) {
+      const output = document.getElementById('outputJson');
+      output.innerText = `Fetching ${path}...`;
+      try {
+        const res = await fetch(path);
+        const data = await res.json();
+        output.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.innerText = JSON.stringify({
+          endpoint: path,
+          clientStatus: 'Static deployment mode (GitHub Pages preview)',
+          note: 'Full dynamic responses are active when running Node server on localhost or target cloud VM.',
+          mockResponse: path === '/health' 
+            ? { status: "UP", timestamp: new Date().toISOString() }
+            : { ready: true, message: "System operational" }
+        }, null, 2);
+      }
+    }
+  </script>
+</body>
+</html>
